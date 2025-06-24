@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Webdge Login</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 50px;
+    }
+    .hidden { display: none; }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .google { background-color: #DB4437; color: white; }
+    .github { background-color: #24292e; color: white; }
+    .yahoo  { background-color: #6001D2; color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN SECTION -->
+  <div id="loginSection">
+    <h2>Masuk ke Webdge</h2>
+    <button class="google" onclick="loginGoogle()">Login dengan Google</button><br>
+    <button class="github" onclick="loginGitHub()">Login dengan GitHub</button><br>
+    <button class="yahoo" onclick="loginYahoo()">Login dengan Yahoo</button>
+  </div>
+
+  <!-- SEARCH SECTION -->
+  <div id="searchSection" class="hidden">
+    <h1>Selamat datang di Webdge!</h1>
+    <p id="welcomeMsg"></p>
+    <button onclick="logout()">Logout</button>
+    <br><br>
+    <input type="text" id="query" placeholder="Cari sesuatu..." />
+    <button onclick="search()">Cari</button>
+    <div id="results"></div>
+  </div>
+
+  <!-- Firebase SDK via ES Module -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithPopup,
+      onAuthStateChanged,
+      signOut,
+      GoogleAuthProvider,
+      GithubAuthProvider,
+      OAuthProvider
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+    // Firebase config dari kamu
+    const firebaseConfig = {
+      apiKey: "AIzaSyAX1LA2fIpQ87E6p9cwastrPHV1kHDoJvU",
+      authDomain: "webdge-app.firebaseapp.com",
+      projectId: "webdge-app",
+      storageBucket: "webdge-app.firebasestorage.app",
+      messagingSenderId: "596490924658",
+      appId: "1:596490924658:web:1a1b8fcc450ce0da0408eb"
+    };
+
+    // Inisialisasi
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const googleProvider = new GoogleAuthProvider();
+    const githubProvider = new GithubAuthProvider();
+    const yahooProvider = new OAuthProvider("yahoo.com");
+
+    // Login functions
+    window.loginGoogle = () => signInWithPopup(auth, googleProvider);
+    window.loginGitHub = () => signInWithPopup(auth, githubProvider);
+    window.loginYahoo = () => signInWithPopup(auth, yahooProvider);
+
+    window.logout = () => signOut(auth);
+
+    // Auth state handler
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("searchSection").classList.remove("hidden");
+        document.getElementById("welcomeMsg").textContent = `Halo, ${user.displayName || user.email}`;
+      } else {
+        document.getElementById("loginSection").classList.remove("hidden");
+        document.getElementById("searchSection").classList.add("hidden");
+      }
+    });
+
+    // Dummy search (bisa diganti Google Search API)
+    window.search = () => {
+      const query = document.getElementById("query").value.trim();
+      if (!query) {
+        alert("Tolong tulis bidang ini.");
+        return;
+      }
+      document.getElementById("results").innerHTML = `<p>Mencari <strong>${query}</strong>...</p>`;
+    };
+  </script>
+</body>
+</html>
