@@ -2,108 +2,114 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Webdge Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Webdge 🔍</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f4f4f4;
-      text-align: center;
-      padding: 50px;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #e0f0ff, #f9f9f9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 80px;
     }
-    .hidden { display: none; }
+    h1 {
+      color: #0078d7;
+      font-size: 3rem;
+    }
+    #searchBox {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1.2rem;
+      width: 300px;
+      border: 2px solid #0078d7;
+      border-radius: 12px;
+      outline: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
     button {
       padding: 10px 20px;
-      margin: 10px;
-      font-size: 16px;
+      font-size: 1rem;
+      background-color: #0078d7;
+      color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
+      transition: 0.3s;
     }
-    .google { background-color: #DB4437; color: white; }
-    .github { background-color: #24292e; color: white; }
-    .yahoo  { background-color: #6001D2; color: white; }
+    button:hover {
+      background-color: #005ea3;
+      box-shadow: 0 0 8px #0078d7;
+    }
+    #results {
+      margin-top: 40px;
+      max-width: 600px;
+      text-align: left;
+    }
+    .result-item {
+      margin-bottom: 20px;
+      padding: 10px;
+      border-left: 4px solid #0078d7;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .result-item a {
+      font-size: 1.2rem;
+      color: #0078d7;
+      text-decoration: none;
+    }
+    .result-item p {
+      color: #444;
+    }
   </style>
 </head>
 <body>
-
-  <!-- LOGIN SECTION -->
-  <div id="loginSection">
-    <h2>Masuk ke Webdge</h2>
-    <button class="google" onclick="loginGoogle()">Login dengan Google</button><br>
-    <button class="github" onclick="loginGitHub()">Login dengan GitHub</button><br>
-    <button class="yahoo" onclick="loginYahoo()">Login dengan Yahoo</button>
-  </div>
-
-  <!-- SEARCH SECTION -->
-  <div id="searchSection" class="hidden">
-    <h1>Selamat datang di Webdge!</h1>
-    <p id="welcomeMsg"></p>
-    <button onclick="logout()">Logout</button>
-    <br><br>
-    <input type="text" id="query" placeholder="Cari sesuatu..." />
+  <h1>Webdge 🔍</h1>
+  <div id="searchBox">
+    <input type="text" id="query" placeholder="Mau cari apa hari ini?" />
     <button onclick="search()">Cari</button>
-    <div id="results"></div>
   </div>
+  <div id="results"></div>
 
-  <!-- Firebase SDK via ES Module -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import {
-      getAuth,
-      signInWithPopup,
-      onAuthStateChanged,
-      signOut,
-      GoogleAuthProvider,
-      GithubAuthProvider,
-      OAuthProvider
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  <script>
+    const API_KEY = 'AIzaSyCBpRXjKxEB7ezvR1DlYx5JIUugYMD3UJU';
+    const CX = '248d27dd941dc4f0d';
 
-    // Firebase config dari kamu
-    const firebaseConfig = {
-      apiKey: "AIzaSyAX1LA2fIpQ87E6p9cwastrPHV1kHDoJvU",
-      authDomain: "webdge-app.firebaseapp.com",
-      projectId: "webdge-app",
-      storageBucket: "webdge-app.firebasestorage.app",
-      messagingSenderId: "596490924658",
-      appId: "1:596490924658:web:1a1b8fcc450ce0da0408eb"
-    };
-
-    // Inisialisasi
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    const googleProvider = new GoogleAuthProvider();
-    const githubProvider = new GithubAuthProvider();
-    const yahooProvider = new OAuthProvider("yahoo.com");
-
-    // Login functions
-    window.loginGoogle = () => signInWithPopup(auth, googleProvider);
-    window.loginGitHub = () => signInWithPopup(auth, githubProvider);
-    window.loginYahoo = () => signInWithPopup(auth, yahooProvider);
-
-    window.logout = () => signOut(auth);
-
-    // Auth state handler
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        document.getElementById("loginSection").classList.add("hidden");
-        document.getElementById("searchSection").classList.remove("hidden");
-        document.getElementById("welcomeMsg").textContent = `Halo, ${user.displayName || user.email}`;
-      } else {
-        document.getElementById("loginSection").classList.remove("hidden");
-        document.getElementById("searchSection").classList.add("hidden");
-      }
-    });
-
-    // Dummy search (bisa diganti Google Search API)
-    window.search = () => {
-      const query = document.getElementById("query").value.trim();
+    function search() {
+      const query = document.getElementById('query').value.trim();
       if (!query) {
         alert("Tolong tulis bidang ini.");
         return;
       }
-      document.getElementById("results").innerHTML = `<p>Mencari <strong>${query}</strong>...</p>`;
-    };
+
+      fetch(`https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('results');
+          container.innerHTML = '';
+          if (!data.items || data.items.length === 0) {
+            container.innerHTML = '<p>Hasil tidak ditemukan 😢</p>';
+            return;
+          }
+          data.items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+              <a href="${item.link}" target="_blank">${item.title}</a>
+              <p>${item.snippet}</p>
+            `;
+            container.appendChild(div);
+          });
+        })
+        .catch(err => {
+          alert("Terjadi kesalahan saat mencari. Coba lagi.");
+          console.error(err);
+        });
+    }
   </script>
 </body>
 </html>
